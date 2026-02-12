@@ -38,8 +38,14 @@ jobs:
       - name: Run API tests
         run: |
           mkdir -p reports
+          ENV_FILE="postman/environments/dev.environment.json"
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.target_env }}" = "staging" ]; then
+            ENV_FILE="postman/environments/staging.environment.json"
+          fi
+
           newman run postman/collections/postman-regression.collection.json \
-            -e postman/environments/dev.environment.json \
+            -e "$ENV_FILE" \
             --env-var baseUrl=${{ secrets.BASE_URL }} \
             --env-var authBaseUrl=${{ secrets.AUTH_BASE_URL }} \
             -r cli,htmlextra \

@@ -6,6 +6,15 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
+    inputs:
+      target_env:
+        description: "Environment"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - staging
 
 jobs:
   smoke:
@@ -22,7 +31,13 @@ jobs:
 
       - name: Run smoke tests
         run: |
+          ENV_FILE="postman/environments/dev.environment.json"
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.target_env }}" = "staging" ]; then
+            ENV_FILE="postman/environments/staging.environment.json"
+          fi
+
           newman run postman/collections/postman-smoke.collection.json \
-            -e postman/environments/dev.environment.json \
+            -e "$ENV_FILE" \
             --env-var baseUrl=${{ secrets.BASE_URL }} \
             --env-var authBaseUrl=${{ secrets.AUTH_BASE_URL }}
