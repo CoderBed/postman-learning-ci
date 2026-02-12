@@ -24,5 +24,5 @@ jobs:
         run: |
           newman run postman/collections/postman-smoke.collection.json \
             -e postman/environments/dev.environment.json \
-            --env-var baseUrl=https://jsonplaceholder.typicode.com \
-            --env-var authBaseUrl=https://dummyjson.com
+            --env-var baseUrl=${{ secrets.BASE_URL }} \
+            --env-var authBaseUrl=${{ secrets.AUTH_BASE_URL }}
