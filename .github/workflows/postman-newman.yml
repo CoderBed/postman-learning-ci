@@ -12,12 +12,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install -g newman
-      - run: |
+
+      - name: Install Newman
+        run: npm install -g newman newman-reporter-htmlextra
+
+      - name: Run API tests
+        run: |
+          mkdir -p reports
           newman run postman/Postman-Ogrenme.collection.json \
             -e postman/JSONPlaceholder-Env.environment.json \
             --env-var baseUrl=https://jsonplaceholder.typicode.com \
-            --env-var authBaseUrl=https://dummyjson.com
+            --env-var authBaseUrl=https://dummyjson.com \
+            -r cli,htmlextra \
+            --reporter-htmlextra-export reports/newman-report.html
+
+      - name: Upload Newman HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: newman-html-report
+          path: reports/newman-report.html
