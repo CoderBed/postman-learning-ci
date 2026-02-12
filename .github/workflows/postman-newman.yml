@@ -19,6 +19,7 @@ on:
         options:
           - dev
           - staging
+          - prod
   schedule:
     - cron: "0 6 * * 1"
 
