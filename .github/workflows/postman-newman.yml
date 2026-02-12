@@ -1,0 +1,23 @@
+name: Postman Newman Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  newman:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install -g newman
+      - run: |
+          newman run postman/Postman-Ogrenme.collection.json \
+            -e postman/JSONPlaceholder-Env.environment.json \
+            --env-var baseUrl=https://jsonplaceholder.typicode.com \
+            --env-var authBaseUrl=https://dummyjson.com
