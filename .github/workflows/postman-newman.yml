@@ -1,3 +1,4 @@
+
 name: Postman Newman Tests
 
 on:
@@ -6,6 +7,8 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
 
 jobs:
   newman:
