@@ -16,44 +16,34 @@ on:
         required: true
         default: "dev"
         type: choice
-        options:
-          - dev
-          - staging
-          - prod
+        options: [dev, staging, prod]
   schedule:
     - cron: "0 6 * * 1"
 
 jobs:
-  newman:
+  newman_non_prod:
+    if: github.event_name != 'workflow_dispatch' || inputs.target_env != 'prod'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install Newman
-        run: npm install -g newman newman-reporter-htmlextra
+      - run: npm install -g newman newman-reporter-htmlextra
       - name: Run API tests
         run: |
           mkdir -p reports
           ENV_FILE="postman/environments/dev.environment.json"
-
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            if [ "${{ inputs.target_env }}" = "staging" ]; then
-              ENV_FILE="postman/environments/staging.environment.json"
-            elif [ "${{ inputs.target_env }}" = "prod" ]; then
-              ENV_FILE="postman/environments/prod.environment.json"
-            fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.target_env }}" = "staging" ]; then
+            ENV_FILE="postman/environments/staging.environment.json"
           fi
-
           newman run postman/collections/postman-regression.collection.json \
             -e "$ENV_FILE" \
             --env-var baseUrl=${{ secrets.BASE_URL }} \
             --env-var authBaseUrl=${{ secrets.AUTH_BASE_URL }} \
             -r cli,htmlextra \
             --reporter-htmlextra-export reports/newman-report.html
-      - name: Upload Newman HTML report
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: newman-html-report
@@ -63,20 +53,35 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const title = `Newman tests failed - ${context.runNumber}`;
-            const body = [
-              "Newman test workflow basarisiz oldu.",
-              "",
-              `- Workflow: ${context.workflow}`,
-              `- Run: https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
-              `- Branch: ${context.ref}`,
-              `- Commit: ${context.sha}`
-            ].join("\n");
-
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title,
-              body,
-              labels: ["bug", "ci"]
+              title: `Newman tests failed - ${context.runNumber}`,
+              body: `Run: https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              labels: ["bug","ci"]
             });
+
+  newman_prod:
+    if: github.event_name == 'workflow_dispatch' && inputs.target_env == 'prod'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install -g newman newman-reporter-htmlextra
+      - name: Run API tests (prod)
+        run: |
+          mkdir -p reports
+          newman run postman/collections/postman-regression.collection.json \
+            -e postman/environments/prod.environment.json \
+            --env-var baseUrl=${{ secrets.BASE_URL }} \
+            --env-var authBaseUrl=${{ secrets.AUTH_BASE_URL }} \
+            -r cli,htmlextra \
+            --reporter-htmlextra-export reports/newman-report.html
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: newman-html-report-prod
+          path: reports/newman-report.html

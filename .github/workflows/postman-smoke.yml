@@ -12,34 +12,42 @@ on:
         required: true
         default: "dev"
         type: choice
-        options:
-          - dev
-          - staging
-          - prod
+        options: [dev, staging, prod]
 
 jobs:
-  smoke:
+  smoke_non_prod:
+    if: github.event_name != 'workflow_dispatch' || inputs.target_env != 'prod'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install Newman
-        run: npm install -g newman
+      - run: npm install -g newman
       - name: Run smoke tests
         run: |
           ENV_FILE="postman/environments/dev.environment.json"
-
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            if [ "${{ inputs.target_env }}" = "staging" ]; then
-              ENV_FILE="postman/environments/staging.environment.json"
-            elif [ "${{ inputs.target_env }}" = "prod" ]; then
-              ENV_FILE="postman/environments/prod.environment.json"
-            fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.target_env }}" = "staging" ]; then
+            ENV_FILE="postman/environments/staging.environment.json"
           fi
-
           newman run postman/collections/postman-smoke.collection.json \
             -e "$ENV_FILE" \
+            --env-var baseUrl=${{ secrets.BASE_URL }} \
+            --env-var authBaseUrl=${{ secrets.AUTH_BASE_URL }}
+
+  smoke_prod:
+    if: github.event_name == 'workflow_dispatch' && inputs.target_env == 'prod'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install -g newman
+      - name: Run smoke tests (prod)
+        run: |
+          newman run postman/collections/postman-smoke.collection.json \
+            -e postman/environments/prod.environment.json \
             --env-var baseUrl=${{ secrets.BASE_URL }} \
             --env-var authBaseUrl=${{ secrets.AUTH_BASE_URL }}
