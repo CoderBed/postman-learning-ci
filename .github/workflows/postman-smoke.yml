@@ -1,0 +1,28 @@
+name: Postman Smoke Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Newman
+        run: npm install -g newman
+
+      - name: Run smoke tests
+        run: |
+          newman run postman/Postman-Smoke.collection.json \
+            -e postman/JSONPlaceholder-Env.environment.json \
+            --env-var baseUrl=https://jsonplaceholder.typicode.com \
+            --env-var authBaseUrl=https://dummyjson.com

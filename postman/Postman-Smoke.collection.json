@@ -1,0 +1,258 @@
+{
+  "info": {
+    "_postman_id": "982c6869-e9f1-4544-bb83-9277c63e45bd",
+    "name": "Postman-Smoke",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "52222879",
+    "_collection_link": "https://go.postman.co/collection/52222879-982c6869-e9f1-4544-bb83-9277c63e45bd?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "02 - Get Single Post Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Post id is 1\", function () {",
+              "  const jsonData = pm.response.json();",
+              "  pm.expect(jsonData.id).to.eql(1);",
+              "});",
+              "",
+              "pm.test(\"Response matches post schema\", function () {",
+              "  const schema = {",
+              "    type: \"object\",",
+              "    required: [\"userId\", \"id\", \"title\", \"body\"],",
+              "    properties: {",
+              "      userId: { type: \"number\" },",
+              "      id: { type: \"number\" },",
+              "      title: { type: \"string\" },",
+              "      body: { type: \"string\" }",
+              "    }",
+              "  };",
+              "",
+              "  pm.response.to.have.jsonSchema(schema);",
+              "});",
+              "",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/posts/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "posts",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "04 - Create Post Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "(() => {",
+              "  const data = pm.response.json();",
+              "",
+              "  pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "  });",
+              "",
+              "  pm.test(\"Response has id\", function () {",
+              "    pm.expect(data).to.have.property(\"id\");",
+              "  });",
+              "",
+              "  pm.test(\"Title was injected from variable\", function () {",
+              "    pm.expect(data.title).to.eql(pm.environment.get(\"randomTitle\"));",
+              "  });",
+              "",
+              "  pm.test(\"Body was injected from variable\", function () {",
+              "    pm.expect(data.body).to.eql(pm.environment.get(\"randomBody\"));",
+              "  });",
+              "",
+              "  pm.environment.set(\"createdPostId\", data.id);",
+              "})();",
+              "",
+              "",
+              "",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const randomNo = Math.floor(Math.random() * 100000);",
+              "",
+              "pm.environment.set(\"randomTitle\", `postman-title-${randomNo}`);",
+              "pm.environment.set(\"randomBody\", `postman-body-${randomNo}`);",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"{{randomTitle}}\",\n  \"body\": \"{{randomBody}}\",\n  \"userId\": 1\n}\n\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/posts",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "posts"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "08 - Login (Get Token) Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "(() => {",
+              "  pm.test(\"Login status is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "  });",
+              "",
+              "  const loginData = pm.response.json();",
+              "  pm.environment.set(\"token\", loginData.accessToken);",
+              "",
+              "  pm.test(\"Token saved to environment\", function () {",
+              "    pm.expect(pm.environment.get(\"token\")).to.be.a(\"string\").and.not.empty;",
+              "  });",
+              "})();",
+              "",
+              "",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"emilys\",\n  \"password\": \"emilyspass\",\n  \"expiresInMins\": 30\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{authBaseUrl}}/auth/login",
+          "host": [
+            "{{authBaseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "09 - Get Me (Auth) Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Auth me status is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Returned user has id\", function () {",
+              "  const data = pm.response.json();",
+              "  pm.expect(data).to.have.property(\"id\");",
+              "});",
+              "",
+              "pm.test(\"Returned username is emilys\", function () {",
+              "  const data = pm.response.json();",
+              "  pm.expect(data.username).to.eql(\"emilys\");",
+              "});",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{authBaseUrl}}/auth/me",
+          "host": [
+            "{{authBaseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
