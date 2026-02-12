@@ -29,8 +29,8 @@ jobs:
       - name: Run API tests
         run: |
           mkdir -p reports
-          newman run postman/Postman-Ogrenme.collection.json \
-            -e postman/JSONPlaceholder-Env.environment.json \
+          newman run postman/collections/postman-regression.collection.json \
+            -e postman/environments/dev.environment.json \
             --env-var baseUrl=https://jsonplaceholder.typicode.com \
             --env-var authBaseUrl=https://dummyjson.com \
             -r cli,htmlextra \

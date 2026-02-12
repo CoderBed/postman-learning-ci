@@ -22,7 +22,7 @@ jobs:
 
       - name: Run smoke tests
         run: |
-          newman run postman/Postman-Smoke.collection.json \
-            -e postman/JSONPlaceholder-Env.environment.json \
+          newman run postman/collections/postman-smoke.collection.json \
+            -e postman/environments/dev.environment.json \
             --env-var baseUrl=https://jsonplaceholder.typicode.com \
             --env-var authBaseUrl=https://dummyjson.com
