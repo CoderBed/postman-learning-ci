@@ -41,6 +41,9 @@ jobs:
             -e "$ENV_FILE" \
             --env-var baseUrl=${{ secrets.BASE_URL }} \
             --env-var authBaseUrl=${{ secrets.AUTH_BASE_URL }} \
+            --timeout-request 15000 \
+            --timeout 60000 \
+            --delay-request 100
             -r cli,htmlextra \
             --reporter-htmlextra-export reports/newman-report.html
       - uses: actions/upload-artifact@v4
@@ -78,6 +81,9 @@ jobs:
             -e postman/environments/prod.environment.json \
             --env-var baseUrl=${{ secrets.BASE_URL }} \
             --env-var authBaseUrl=${{ secrets.AUTH_BASE_URL }} \
+            --timeout-request 15000 \
+            --timeout 60000 \
+            --delay-request 100
             -r cli,htmlextra \
             --reporter-htmlextra-export reports/newman-report.html
       - uses: actions/upload-artifact@v4
