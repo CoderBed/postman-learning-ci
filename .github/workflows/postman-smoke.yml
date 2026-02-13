@@ -34,6 +34,10 @@ jobs:
             -e "$ENV_FILE" \
             --env-var baseUrl=${{ secrets.BASE_URL }} \
             --env-var authBaseUrl=${{ secrets.AUTH_BASE_URL }}
+            --timeout-request 15000 \
+            --timeout 60000 \
+            --delay-request 100 \
+            --bail false
 
   smoke_prod:
     if: github.event_name == 'workflow_dispatch' && inputs.target_env == 'prod'
@@ -51,3 +55,7 @@ jobs:
             -e postman/environments/prod.environment.json \
             --env-var baseUrl=${{ secrets.BASE_URL }} \
             --env-var authBaseUrl=${{ secrets.AUTH_BASE_URL }}
+            --timeout-request 15000 \
+            --timeout 60000 \
+            --delay-request 100 \
+            --bail false
