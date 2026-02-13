@@ -42,7 +42,10 @@ jobs:
             --env-var baseUrl=${{ secrets.BASE_URL }} \
             --env-var authBaseUrl=${{ secrets.AUTH_BASE_URL }} \
             -r cli,htmlextra \
-            --reporter-htmlextra-export reports/newman-report.html
+            --reporter-htmlextra-export reports/newman-report.html \
+            --timeout-request 15000 \
+            --timeout 60000 \
+            --delay-request 100
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -79,7 +82,10 @@ jobs:
             --env-var baseUrl=${{ secrets.BASE_URL }} \
             --env-var authBaseUrl=${{ secrets.AUTH_BASE_URL }} \
             -r cli,htmlextra \
-            --reporter-htmlextra-export reports/newman-report.html
+            --reporter-htmlextra-export reports/newman-report.html \
+            --timeout-request 15000 \
+            --timeout 60000 \
+            --delay-request 100
       - uses: actions/upload-artifact@v4
         if: always()
         with:
